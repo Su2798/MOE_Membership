@@ -1,0 +1,10 @@
+{
+  "description": "Manage student records, programs, invitations, and memberships from one admin dashboard, while students use a mobile app to activate and view their memberships.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
