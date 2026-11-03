@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react"
 
+import { Menu, X } from "lucide-react"
+
 import {
   Link,
   Navigate,
@@ -54,6 +56,104 @@ function PageFrame({ children }: { children: ReactNode }) {
   )
 }
 
+function StudentAuthFrame({ children }: { children: ReactNode }) {
+  const language = useLanguage()
+  const db = useDb()
+  const tr = (text: string) => translate(text, language === "my" ? "MY" : "EN")
+
+  return (
+    <div className="prd-student-experience">
+      <LocalizedContent>
+        <>
+          <header className="prd-topbar prd-student-topbar">
+            <div className="prd-student-header-identity">
+              <Link
+                className="prd-student-header-brand"
+                to="/member"
+                aria-label={tr("Membership workspace")}
+              >
+                <BrandLogo className="prd-sidebar-logo" />
+              </Link>
+              <span className="prd-student-brand-divider" />
+              <div className="prd-topbar-identity">
+                <span className="prd-eyebrow">{tr("STUDENT")}</span>
+                <strong>{tr("MOE Membership")}</strong>
+              </div>
+            </div>
+            <div className="prd-topbar-actions">
+              <nav className="prd-workspace-switch" aria-label={tr("Workspace")}>
+                <Link to="/console">{tr("Admin workspace")}</Link>
+                <Link className="active" to="/member" aria-current="page">
+                  {tr("Student mini app")}
+                </Link>
+              </nav>
+              <LanguageSwitch language={language} onChange={setLanguage} />
+              <span className="prd-prototype-badge">
+                {tr("Local prototype")} · {db.users.length} {tr("accounts")}
+              </span>
+            </div>
+          </header>
+          <main className="prd-student-preview">
+            <div className="prd-student-intro">
+              <div>
+                <p className="prd-eyebrow">{tr("Student experience")}</p>
+                <h1>{tr("A simple way to belong.")}</h1>
+                <p>
+                  {tr("Explore your membership, QR access, and account details.")}
+                </p>
+              </div>
+            </div>
+            <div className="prd-student-layout">
+              <section
+                aria-label={tr("Student mini app")}
+                className="prd-student-phone prd-student-auth-phone"
+              >
+                <header className="prd-student-phone-header">
+                  <BrandLogo className="prd-student-phone-logo" />
+                  <div className="prd-student-phone-brand">
+                    <strong>{tr("MOE Membership")}</strong>
+                    <span>{tr("Telegram Mini App · Preview")}</span>
+                  </div>
+                  <LanguageSwitch language={language} onChange={setLanguage} />
+                </header>
+                <div className="prd-student-phone-content">{children}</div>
+              </section>
+              <aside className="prd-student-info">
+                <section className="card">
+                  <p className="prd-eyebrow">{tr("Designed to be simple")}</p>
+                  <h2>{tr("One membership. Clear access.")}</h2>
+                  <p>
+                    {tr(
+                      "Your membership dates and visit balance are managed by MOE.",
+                    )}
+                  </p>
+                  <ul>
+                    <li>{tr("Membership dates are set by Admin")}</li>
+                    <li>
+                      {tr("Show your personal QR to authorized MOE staff")}
+                    </li>
+                    <li>
+                      {tr("Visits are recorded after a successful check-in")}
+                    </li>
+                    <li>
+                      {tr("Review your membership and attendance history")}
+                    </li>
+                  </ul>
+                </section>
+                <p className="prd-student-disclaimer">
+                  {tr(
+                    "Interactive UI only. Account and membership data are prototype data stored in this browser.",
+                  )}
+                </p>
+              </aside>
+            </div>
+          </main>
+        </>
+      </LocalizedContent>
+    </div>
+  )
+}
+
 function AuthPage() {
   const [params] = useSearchParams()
 
@@ -64,6 +164,8 @@ function AuthPage() {
   const [busy, setBusy] = useState(false)
 
   const navigate = useNavigate()
+
+  const location = useLocation()
 
   const db = useDb()
 
@@ -89,11 +191,22 @@ function AuthPage() {
 
       signIn(app, user)
 
+      const state = location.state
+      const requestedPath =
+        typeof state === "object" && state !== null && "from" in state
+          ? state.from
+          : null
+      const fallbackPath = app === "member" ? "/member" : "/console"
+      const appPrefix = app === "member" ? "/member" : "/console"
+      const returnPath =
+        typeof requestedPath === "string" &&
+        (requestedPath === appPrefix ||
+          requestedPath.startsWith(`${appPrefix}/`))
+          ? requestedPath
+          : fallbackPath
       const target = user.mustChangePassword
         ? `/change-password?app=${app}`
-        : app === "member"
-          ? "/member"
-          : "/console"
+        : returnPath
 
       navigate(target, { replace: true })
     } catch (reason) {
@@ -103,10 +216,13 @@ function AuthPage() {
     }
   }
 
-  return (
-    <PageFrame>
-      <section className="prd-auth card">
-        <BrandLogo className="prd-brand-mark" />
+  const content = (
+    <section
+      className={
+        app === "member" ? "prd-auth prd-auth--mini" : "prd-auth card"
+      }
+    >
+        {app === "console" && <BrandLogo className="prd-brand-mark" />}
         <p className="prd-eyebrow">MEMBERSHIP SYSTEM · PROTOTYPE</p>
         <h1>{app === "member" ? "Welcome back" : "Console sign in"}</h1>
         <p className="prd-subtitle">
@@ -143,9 +259,12 @@ function AuthPage() {
             <p className="prd-auth-foot">
               <Link to="/forgot-password">Forgot password?</Link>
             </p>
-            <p className="prd-auth-foot">
-              New to MOE? <Link to="/signup">Create member account</Link>
-            </p>
+            <Link
+              className="button button--secondary button--wide prd-auth-signup"
+              to="/signup"
+            >
+              Create member account
+            </Link>
           </>
         ) : null}
         <p className="prd-auth-foot">
@@ -160,12 +279,19 @@ function AuthPage() {
           <p>Staff: 09 400 000 002 / staff123</p>
           <p>Member: 09 421 895 204 / member123</p>
         </details>
-        <p className="prd-prototype-note">
-          Demo only: this browser prototype stores data locally and does not
-          provide production authentication or shared device data.
-        </p>
-      </section>
-    </PageFrame>
+        {app === "console" && (
+          <p className="prd-prototype-note">
+            Demo only: this browser prototype stores data locally and does not
+            provide production authentication or shared device data.
+          </p>
+        )}
+    </section>
+  )
+
+  return app === "member" ? (
+    <StudentAuthFrame>{content}</StudentAuthFrame>
+  ) : (
+    <PageFrame>{content}</PageFrame>
   )
 }
 
@@ -217,9 +343,8 @@ function SignupPage() {
   }
 
   return (
-    <PageFrame>
-      <section className="prd-auth card">
-        <BrandLogo className="prd-brand-mark" />
+    <StudentAuthFrame>
+      <section className="prd-auth prd-auth--mini">
         <p className="prd-eyebrow">MEMBER ACCOUNT</p>
         <h1>Create your account</h1>
         <p className="prd-subtitle">
@@ -264,17 +389,22 @@ function SignupPage() {
           </button>
         </form>
         <p className="prd-auth-foot">
-          <Link to="/login">Back to sign in</Link>
+          <Link
+            className="button button--secondary button--wide"
+            to="/login?app=member"
+          >
+            Back to sign in
+          </Link>
         </p>
       </section>
-    </PageFrame>
+    </StudentAuthFrame>
   )
 }
 
 function ForgotPasswordPage() {
   return (
-    <PageFrame>
-      <section className="prd-auth card">
+    <StudentAuthFrame>
+      <section className="prd-auth prd-auth--mini">
         <BrandLogo className="prd-brand-mark" />
         <p className="prd-eyebrow">MEMBER ACCOUNT</p>
         <h1>Forgot password?</h1>
@@ -291,7 +421,7 @@ function ForgotPasswordPage() {
           <Link to="/member/profile">Back to profile</Link>
         </p>
       </section>
-    </PageFrame>
+    </StudentAuthFrame>
   )
 }
 
@@ -377,9 +507,12 @@ function ChangePasswordPage() {
     }
   }
 
-  return (
-    <PageFrame>
-      <section className="prd-auth card">
+  const content = (
+    <section
+      className={
+        app === "member" ? "prd-auth prd-auth--mini" : "prd-auth card"
+      }
+    >
         <h1>Change your password</h1>
         <p className="prd-subtitle">Set a new password to continue.</p>
         <form onSubmit={submit}>
@@ -404,12 +537,19 @@ function ChangePasswordPage() {
             Save password
           </button>
         </form>
-      </section>
-    </PageFrame>
+    </section>
+  )
+
+  return app === "member" ? (
+    <StudentAuthFrame>{content}</StudentAuthFrame>
+  ) : (
+    <PageFrame>{content}</PageFrame>
   )
 }
 
 function SessionShell({ kind }: { kind: "member" | "console" }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+
   const auth = useAuth(kind)
 
   const user = auth.user
@@ -422,7 +562,42 @@ function SessionShell({ kind }: { kind: "member" | "console" }) {
 
   const db = useDb()
 
-  if (!user) return null
+  useEffect(() => {
+    if (!menuOpen) return
+
+    const previousBodyOverflow = document.body.style.overflow
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setMenuOpen(false)
+    }
+
+    function closeOnDesktop() {
+      if (window.innerWidth > 900) setMenuOpen(false)
+    }
+
+    document.body.style.overflow = "hidden"
+    document.addEventListener("keydown", closeOnEscape)
+    window.addEventListener("resize", closeOnDesktop)
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow
+      document.removeEventListener("keydown", closeOnEscape)
+      window.removeEventListener("resize", closeOnDesktop)
+    }
+  }, [menuOpen])
+
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [pathname])
+
+  if (!user)
+    return (
+      <Navigate
+        to={`/login?app=${kind}`}
+        state={{ from: pathname }}
+        replace
+      />
+    )
 
   if (kind === "member")
     return (
@@ -461,17 +636,41 @@ function SessionShell({ kind }: { kind: "member" | "console" }) {
 
   return (
     <div className="prd-console">
-      <aside className="prd-sidebar">
+      {menuOpen && (
+        <button
+          aria-label={tr("Close navigation")}
+          className="prd-sidebar-backdrop"
+          onClick={() => setMenuOpen(false)}
+          type="button"
+        />
+      )}
+      <aside
+        className={`prd-sidebar${menuOpen ? " is-open" : ""}`}
+        id="console-navigation"
+      >
         <Link className="prd-sidebar-brand" to="/console">
           <BrandLogo className="prd-sidebar-logo" />
           <strong>Membership</strong>
         </Link>
+        <button
+          aria-label={tr("Close navigation")}
+          className="prd-sidebar-close"
+          onClick={() => setMenuOpen(false)}
+          type="button"
+        >
+          <X aria-hidden="true" size={20} />
+        </button>
         <div className="prd-role-label">
           {tr(user.role === "admin" ? "ADMIN CONSOLE" : "STAFF CONSOLE")}
         </div>
         <nav>
           {links.map(([to, label]) => (
-            <Link className={pathname === to ? "active" : ""} key={to} to={to}>
+            <Link
+              className={pathname === to ? "active" : ""}
+              key={to}
+              onClick={() => setMenuOpen(false)}
+              to={to}
+            >
               {label}
             </Link>
           ))}
@@ -483,11 +682,23 @@ function SessionShell({ kind }: { kind: "member" | "console" }) {
       </aside>
       <main className="prd-console-main">
         <header className="prd-topbar">
-          <div className="prd-topbar-identity">
-            <span className="prd-eyebrow">
-              {tr(user.role === "admin" ? "ADMIN" : "STAFF")}
-            </span>
-            <strong>{user.name}</strong>
+          <div className="prd-topbar-heading">
+            <button
+              aria-controls="console-navigation"
+              aria-expanded={menuOpen}
+              aria-label={tr("Open navigation")}
+              className="prd-menu-button"
+              onClick={() => setMenuOpen(true)}
+              type="button"
+            >
+              <Menu aria-hidden="true" size={21} />
+            </button>
+            <div className="prd-topbar-identity">
+              <span className="prd-eyebrow">
+                {tr(user.role === "admin" ? "ADMIN" : "STAFF")}
+              </span>
+              <strong>{user.name}</strong>
+            </div>
           </div>
           <div className="prd-topbar-actions">
             <nav className="prd-workspace-switch" aria-label={tr("Workspace")}>
@@ -538,26 +749,16 @@ function RootRedirect() {
   return <Navigate to="/console" replace />
 }
 
-function PreviewRedirect() {
-  const [params] = useSearchParams()
-  return (
-    <Navigate
-      to={params.get("app") === "member" ? "/member" : "/console"}
-      replace
-    />
-  )
-}
-
 export const router = createBrowserRouter([
   { path: "/", element: <RootRedirect /> },
 
-  { path: "/login", element: <PreviewRedirect /> },
+  { path: "/login", element: <AuthPage /> },
 
   { path: "/signup", element: <SignupPage /> },
 
   { path: "/forgot-password", element: <ForgotPasswordPage /> },
 
-  { path: "/change-password", element: <PreviewRedirect /> },
+  { path: "/change-password", element: <ChangePasswordPage /> },
 
   {
     element: <SessionShell kind="member" />,

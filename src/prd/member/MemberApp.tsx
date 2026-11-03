@@ -1,18 +1,24 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react"
 
-import { Link, useLocation } from "react-router"
+import { Link, useLocation, useNavigate } from "react-router"
 
 import QRCode from "qrcode"
 
 import {
   apply,
+  signIn,
   useAuth,
   useDb,
   useLanguage,
   setLanguage,
 } from "../../domain/store"
 
-import { membershipSummary, qrPayload, updateProfile } from "../../domain/rules"
+import {
+  login,
+  membershipSummary,
+  qrPayload,
+  updateProfile,
+} from "../../domain/rules"
 
 import { formatDateTime } from "../../domain/time"
 
@@ -111,9 +117,12 @@ export function MemberApp({
   const language = useLanguage()
 
   const db = useDb()
+  const navigate = useNavigate()
 
   const t = translations[language]
   const tr = (text: string) => translate(text, language === "my" ? "MY" : "EN")
+  const [previewSignedIn, setPreviewSignedIn] = useState(false)
+  const [previewLoginError, setPreviewLoginError] = useState("")
   const navigation = [
     {
       to: "/member",
@@ -154,6 +163,34 @@ export function MemberApp({
   const currentPage =
     navigation.find((item) => item.to === pathname)?.page ?? "home"
   const [languageError, setLanguageError] = useState("")
+  const showPreviewLogin = pathname === "/member" && !previewSignedIn
+
+  function submitPreviewLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setPreviewLoginError("")
+
+    const form = new FormData(event.currentTarget)
+
+    try {
+      const signedInUser = login(
+        db,
+        String(form.get("phone") ?? ""),
+        String(form.get("password") ?? ""),
+        ["member"],
+      )
+
+      signIn("member", signedInUser)
+
+      if (signedInUser.mustChangePassword) {
+        navigate("/change-password?app=member")
+        return
+      }
+
+      setPreviewSignedIn(true)
+    } catch (reason) {
+      setPreviewLoginError(errorMessage(reason))
+    }
+  }
 
   function changeLanguage(next: "en" | "my") {
     setLanguageError("")
@@ -170,7 +207,7 @@ export function MemberApp({
 
   return (
     <LocalizedContent>
-    <div className="prd-student-experience">
+    <div className="prd-student-experience prd-student-experience--preview">
       <header className="prd-topbar prd-student-topbar">
         <div className="prd-student-header-identity">
           <Link className="prd-student-header-brand" to="/member" aria-label={tr("Membership workspace")}>
@@ -202,9 +239,6 @@ export function MemberApp({
             <h1>{tr("A simple way to belong.")}</h1>
             <p>{tr("Explore your membership, QR access, and account details.")}</p>
           </div>
-          <Link className="button button--primary" to="/signup">
-            {tr("Create member account")}
-          </Link>
         </div>
         {languageError && (
           <p className="prd-error" role="alert">
@@ -225,25 +259,71 @@ export function MemberApp({
               />
             </header>
             <div className="prd-student-phone-content">
-              {children}
+              {showPreviewLogin ? (
+                <section className="prd-mini-login">
+                  <p className="prd-eyebrow">{tr("STUDENT MEMBERSHIP")}</p>
+                  <h1>{tr("Welcome back")}</h1>
+                  <p className="prd-mini-login-subtitle">
+                    {tr("Sign in to view your membership and personal QR.")}
+                  </p>
+                  <form onSubmit={submitPreviewLogin}>
+                    <label className="field">
+                      {tr("Phone number")}
+                      <input
+                        autoComplete="tel"
+                        name="phone"
+                        type="tel"
+                        required
+                      />
+                    </label>
+                    <label className="field">
+                      {tr("Password")}
+                      <input
+                        autoComplete="current-password"
+                        name="password"
+                        type="password"
+                        required
+                      />
+                    </label>
+                    {previewLoginError && (
+                      <p className="prd-error" role="alert">
+                        {previewLoginError}
+                      </p>
+                    )}
+                    <button className="button button--primary button--wide">
+                      {tr("Sign in")}
+                    </button>
+                  </form>
+                  <Link className="button button--secondary button--wide" to="/signup">
+                    {tr("Create member account")}
+                  </Link>
+                  <p className="prd-auth-foot">
+                    <Link to="/forgot-password">{tr("Forgot password?")}</Link>
+                  </p>
+                </section>
+              ) : (
+                children
+              )}
             </div>
-            <nav className="prd-student-bottom-nav" aria-label={tr("Student app screens")}>
-              {navigation.map((item) => (
-                <Link
-                  className={currentPage === item.page ? "active" : ""}
-                  key={item.to}
-                  to={item.to}
-                  aria-current={currentPage === item.page ? "page" : undefined}
-                >
-                  <span className="prd-student-bottom-nav-icon" aria-hidden="true">
-                    {item.icon}
-                  </span>
-                  <span className="prd-student-bottom-nav-label" title={item.label}>
-                    {item.tabLabel}
-                  </span>
-                </Link>
-              ))}
-            </nav>
+            {!showPreviewLogin && (
+              <nav className="prd-student-bottom-nav" aria-label={tr("Student app screens")}>
+                {navigation.map((item) => (
+                  <Link
+                    className={currentPage === item.page ? "active" : ""}
+                    key={item.to}
+                    to={item.to}
+                    aria-current={currentPage === item.page ? "page" : undefined}
+                  >
+                    <span className="prd-student-bottom-nav-icon" aria-hidden="true">
+                      {item.icon}
+                    </span>
+                    <span className="prd-student-bottom-nav-label" title={item.label}>
+                      {item.tabLabel}
+                    </span>
+                  </Link>
+                ))}
+              </nav>
+            )}
           </section>
           <aside className="prd-student-info">
             <section className="card">

@@ -12,6 +12,19 @@
   width: min(100%, 28rem);
   padding: 2rem;
 }
+.prd-student-auth-phone {
+  width: min(100%, 20rem);
+}
+.prd-auth--mini {
+  width: 100%;
+  padding: 0.35rem 0.1rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.prd-auth--mini .prd-eyebrow { margin-top: 0.2rem; }
+.prd-auth--mini .prd-auth-signup { margin-top: 0.85rem; }
 
 .prd-brand-mark {
   display: block;
@@ -81,6 +94,8 @@
 .prd-sidebar-user { display: grid; gap: 0.3rem; margin-top: auto; padding: 1rem 0.4rem 0; border-top: 1px solid var(--border); }
 .prd-sidebar-user span { color: var(--secondary); font-size: 0.76rem; }
 .prd-sidebar-user .button { margin-top: 0.5rem; }
+.prd-menu-button, .prd-sidebar-close, .prd-sidebar-backdrop { display: none; }
+.prd-topbar-heading { display: contents; }
 .prd-console-main { min-width: 0; }
 .prd-topbar { position: sticky; z-index: 10; top: 0; min-height: 4.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; padding: 0.65rem 2rem; background: var(--surface); border-bottom: 1px solid var(--border); }
 .prd-topbar-identity { display: grid; flex: 0 1 auto; gap: 0.15rem; min-width: 8rem; }
@@ -244,22 +259,115 @@
 .prd-result-visits strong { color: var(--text); font-size: 1.35rem; }
 
 @media (max-width: 900px) {
-  .prd-console { grid-template-columns: 13.5rem minmax(0, 1fr); }
+  .prd-console { display: block; }
+  .prd-sidebar {
+    position: fixed;
+    z-index: 41;
+    inset: 0 auto 0 0;
+    width: min(19rem, 86vw);
+    height: 100vh;
+    height: 100dvh;
+    padding: 1rem;
+    overflow-y: auto;
+    border: 0;
+    box-shadow: 0 1rem 3rem #101e2d2e;
+    transform: translateX(-105%);
+    visibility: hidden;
+    transition: transform 200ms ease, visibility 200ms;
+  }
+  .prd-sidebar.is-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  .prd-sidebar-brand { padding: 0.25rem 2.8rem 1rem 0.25rem; }
+  .prd-sidebar-logo { width: 3.25rem; height: 1.8rem; }
+  .prd-role-label { padding-inline: 0.25rem; }
+  .prd-sidebar-user { margin-top: 1rem; }
+  .prd-sidebar nav {
+    display: grid;
+    gap: 0.3rem;
+  }
+  .prd-sidebar nav a {
+    min-height: 2.75rem;
+    padding: 0.65rem 0.75rem;
+  }
+  .prd-menu-button,
+  .prd-sidebar-close {
+    display: grid;
+    flex: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 0.55rem;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .prd-menu-button { display: grid; }
+  .prd-sidebar-close { position: absolute; top: 1rem; right: 1rem; }
+  .prd-sidebar-backdrop {
+    position: fixed;
+    z-index: 40;
+    inset: 0;
+    display: block;
+    border: 0;
+    background: #101e2d66;
+    cursor: pointer;
+  }
+  .prd-topbar-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .prd-console-main,
+  .prd-content,
+  .prd-page,
+  .prd-page-stack,
+  .prd-page > *,
+  .prd-page-stack > *,
+  .prd-table-wrap {
+    min-width: 0;
+  }
   .prd-content { padding: 1.4rem; }
   .prd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .prd-quick-links { grid-template-columns: 1fr; }
   .prd-topbar { align-items: flex-start; flex-direction: column; gap: 0.65rem; padding: 0.8rem 1.4rem; }
   .prd-topbar-actions { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+  .prd-card-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .prd-card-heading > div:first-child {
+    min-width: 0;
+    width: 100%;
+  }
+  .prd-card-heading-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+  .prd-card-heading-actions .prd-filter {
+    flex: 1 1 18rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .prd-card-heading-actions > .button {
+    flex: 0 0 auto;
+  }
+  .prd-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+  .prd-table { width: max-content; min-width: 100%; }
 }
 
 @media (max-width: 650px) {
-  .prd-console { display: block; }
-  .prd-sidebar { position: static; height: auto; padding: 0.6rem 0.8rem; border-right: 0; border-bottom: 1px solid var(--border); }
-  .prd-sidebar-brand { padding: 0.25rem; }
-  .prd-sidebar-logo { width: 3.25rem; height: 1.8rem; }
-  .prd-role-label, .prd-sidebar-user { display: none; }
-  .prd-sidebar nav { display: flex; gap: 0.25rem; overflow-x: auto; padding-bottom: 0.25rem; }
-  .prd-sidebar nav a { flex: 0 0 auto; min-height: 2.35rem; padding: 0.45rem 0.65rem; font-size: 0.76rem; }
   .prd-topbar { align-items: stretch; gap: 0.6rem; padding: 0.7rem 1rem; }
   .prd-topbar-actions { align-items: center; justify-content: flex-start; gap: 0.45rem; }
   .prd-topbar-actions .prd-workspace-switch { order: 0; }
@@ -272,6 +380,12 @@
   .prd-form-wide { grid-column: auto; }
   .prd-card-heading { flex-direction: column; }
   .prd-card-heading-actions { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
+  .prd-card-heading-actions .prd-filter {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+  .prd-card-heading-actions > .button { width: 100%; }
   .prd-pagination { align-items: flex-start; flex-direction: column; }
   .prd-card-heading > .prd-filter { width: 100%; min-width: 0; }
   .prd-filter-row { align-items: stretch; }
@@ -309,6 +423,13 @@ html[lang="my"] .prd-console {
 .prd-workspace-switch a.active { background: #fff; color: #302d29; box-shadow: 0 1px 3px #31231312; }
 .prd-student-preview { width: min(100%, 88rem); margin: 0 auto; padding: 1.65rem 2rem 3rem; }
 .prd-student-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }
+.prd-mini-login { padding: 0.35rem 0.1rem; }
+.prd-mini-login h1 { margin-top: 0.35rem; font-size: 1.35rem; line-height: 1.25; }
+.prd-mini-login-subtitle { margin-top: 0.4rem; color: var(--secondary); font-size: 0.78rem; line-height: 1.5; }
+.prd-mini-login form { display: grid; gap: 0.55rem; margin-top: 1rem; }
+.prd-mini-login .field { margin-bottom: 0; font-size: 0.72rem; }
+.prd-mini-login > .button { margin-top: 0.65rem; }
+.prd-mini-login .prd-auth-foot { margin-top: 0.65rem; }
 .prd-student-intro h1 { margin-top: 0.4rem; color: #292724; font-size: clamp(1.65rem, 3vw, 2rem); letter-spacing: -0.035em; }
 .prd-student-intro > div:first-child > p:last-child { margin-top: 0.35rem; color: #778393; font-size: 0.86rem; }
 .prd-student-layout { display: grid; grid-template-columns: minmax(17rem, 20rem) minmax(15rem, 22rem); align-items: start; justify-content: center; gap: clamp(1.25rem, 3.2vw, 3rem); }
@@ -376,6 +497,48 @@ html[lang="my"] .prd-console {
 .prd-student-info li::before { position: absolute; left: 0; color: #8797a0; content: "✓"; }
 .prd-student-disclaimer { margin-top: 0.8rem; color: #8993a0; font-size: 0.72rem; line-height: 1.55; }
 
+@media (min-width: 901px) {
+  .prd-student-experience--preview {
+    display: flex;
+    height: 100vh;
+    height: 100dvh;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .prd-student-experience--preview .prd-student-topbar {
+    flex: none;
+  }
+
+  .prd-student-experience--preview .prd-student-preview {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    padding: 1rem 2rem 1.25rem;
+  }
+
+  .prd-student-experience--preview .prd-student-intro {
+    flex: none;
+    margin-bottom: 0.85rem;
+  }
+
+  .prd-student-experience--preview .prd-student-layout {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  .prd-student-experience--preview .prd-student-phone {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .prd-student-experience--preview .prd-student-info {
+    align-self: center;
+  }
+}
+
 @media (max-width: 980px) {
   .prd-student-layout { grid-template-columns: minmax(17rem, 20rem) minmax(15rem, 1fr); justify-content: center; gap: 1.5rem; }
   .prd-student-info { grid-column: 2; }
@@ -397,4 +560,66 @@ html[lang="my"] .prd-console {
   .prd-student-layout { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 1rem; }
   .prd-student-phone { width: min(100%, 20rem); height: min(44rem, 78vh); min-height: min(32rem, 70vh); }
   .prd-student-info { grid-column: 1; }
+}
+
+@media (max-width: 650px) {
+  .prd-console,
+  .prd-console-main,
+  .prd-content,
+  .prd-member-content,
+  .prd-page,
+  .prd-form-grid > * {
+    min-width: 0;
+  }
+
+  .prd-sidebar nav {
+    scrollbar-width: none;
+  }
+
+  .prd-topbar-identity,
+  .prd-topbar-actions {
+    min-width: 0;
+  }
+
+  .prd-topbar-actions > * {
+    max-width: 100%;
+  }
+
+  .prd-filter-row > *,
+  .prd-filter-row .field {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .prd-filter-row select,
+  .prd-filter-row .field input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .prd-prompt-actions {
+    flex-wrap: wrap;
+  }
+
+  .prd-prompt-actions .button {
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 400px) {
+  .prd-content {
+    padding-inline: 0.75rem;
+  }
+
+  .prd-auth {
+    padding: 1.2rem;
+  }
+
+  .prd-member-header {
+    padding-inline: 0.75rem;
+  }
+
+  .prd-member-account {
+    gap: 0.4rem;
+  }
 }
